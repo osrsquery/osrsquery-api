@@ -17,7 +17,12 @@ import {
 } from "giraffeql";
 import { knex } from "../../../utils/knex";
 import { isObject } from "./shared";
-import { BaseService, NormalService, PaginatedService } from "../services";
+import {
+  BaseService,
+  LinkService,
+  NormalService,
+  PaginatedService,
+} from "../services";
 import * as Scalars from "../../scalars";
 import type { ObjectTypeDefSqlOptions, SqlType } from "../../../types";
 import { getObjectType } from "./resolver";
@@ -372,7 +377,7 @@ export function generateArrayField(
     allowNull,
     hidden,
     nestHidden,
-    sqlType: "json",
+    sqlType: "jsonb",
     type,
     ...(!allowNull && { defaultValue: [] }),
     sqlOptions: {
@@ -401,7 +406,7 @@ export function generateJSONField(params: GenerateFieldParams) {
     allowNull,
     hidden,
     nestHidden,
-    sqlType: "json",
+    sqlType: "jsonb",
     type: Scalars.jsonString,
     sqlOptions: {
       // necessary for inserting JSON into DB properly -- already stringified
@@ -455,13 +460,12 @@ export function generateKeyValueArray(
   params: {
     valueType?: GiraffeqlScalarType;
     allowNullValue?: boolean;
-    allowNull?: boolean;
-  } = {}
+  } & GenerateFieldParams
 ) {
   const {
     valueType = Scalars.string,
     allowNullValue = false,
-    allowNull = true,
+    ...remainingParams
   } = params;
   // generate the input type if not exists
   if (!inputTypeDefs.has("keyValueObject")) {
@@ -500,9 +504,9 @@ export function generateKeyValueArray(
   }
 
   return generateArrayField({
-    allowNull,
     allowNullElement: false,
     type: new GiraffeqlObjectTypeLookup("keyValueObject"),
+    ...remainingParams,
   });
 }
 
@@ -1128,5 +1132,43 @@ export function generatePaginatorPivotResolverObject(params: {
           resolver: resolverFunction,
           requiredSqlFields: ["id"],
         }),
+  };
+}
+
+// special field for generating the currentUserFollowLink foreign sql field for a model
+export function generateCurrentUserFollowLinkField(followLink: LinkService) {
+  return {
+    type: followLink.typeDefLookup,
+    allowNull: true,
+    sqlOptions: {
+      joinType: followLink.typename,
+      specialJoin: {
+        field: "id",
+        foreignTable: followLink.typename,
+        joinFunction: (
+          knexObject,
+          parentTableAlias,
+          joinTableAlias,
+          specialParams
+        ) => {
+          knexObject.leftJoin(
+            {
+              [joinTableAlias]: followLink.typename,
+            },
+            (builder) => {
+              builder
+                .on(parentTableAlias + ".id", "=", joinTableAlias + ".target")
+                .andOn(
+                  specialParams.currentUserId
+                    ? knex.raw(`"${joinTableAlias}".user = ?`, [
+                        specialParams.currentUserId,
+                      ])
+                    : knex.raw("false")
+                );
+            }
+          );
+        },
+      },
+    },
   };
 }

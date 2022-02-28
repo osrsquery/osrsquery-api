@@ -1,15 +1,15 @@
 {
   "projects": {
-    "default": "giraffeql-boilerplate"
+    "default": "osrsquery"
   },
   "targets": {
-    "giraffeql-boilerplate": {
+    "osrsquery": {
       "hosting": {
-        "giraffeql-boilerplate-api": [
-          "giraffeql-boilerplate-api"
+        "api": [
+          "osrsquery-api"
         ],
-        "giraffeql-boilerplate-cdn": [
-          "giraffeql-boilerplate-cdn"
+        "cdn": [
+          "osrsquery-cdn"
         ]
       }
     }

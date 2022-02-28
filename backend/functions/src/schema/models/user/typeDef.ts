@@ -1,5 +1,5 @@
 import { ObjectTypeDefinition, GiraffeqlObjectType } from "giraffeql";
-import { User } from "../../services";
+import { User, UserUserFollowLink } from "../../services";
 import {
   generateIdField,
   generateCreatedAtField,
@@ -11,6 +11,7 @@ import {
   generateGenericScalarField,
   generateTypenameField,
   generateBooleanField,
+  generateCurrentUserFollowLinkField,
 } from "../../core/helpers/typeDef";
 import * as Scalars from "../../scalars";
 import { userRoleKenum } from "../../enums";
@@ -94,6 +95,8 @@ export default new GiraffeqlObjectType(<ObjectTypeDefinition>{
       defaultValue: true,
       sqlOptions: { field: "is_public" },
     }),
+    currentUserFollowLink:
+      generateCurrentUserFollowLinkField(UserUserFollowLink),
     ...generateCreatedAtField(),
     ...generateUpdatedAtField(),
     ...generateCreatedByField(User),

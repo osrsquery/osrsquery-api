@@ -6,10 +6,10 @@ export const siteDiscordLink = process.env.siteDiscordLink
 export const siteGithubRepositoryUrl = process.env.siteGithubRepositoryUrl
 
 export const firebaseConfig = {
-  apiKey: 'AIzaSyDMuwUROWZQyG93I21ofU7Cx52q42_XZ0Q',
-  authDomain: 'giraffeql-boilerplate.firebaseapp.com',
-  projectId: 'giraffeql-boilerplate',
-  storageBucket: 'giraffeql-boilerplate.appspot.com',
-  messagingSenderId: '229325360702',
-  appId: '1:229325360702:web:30786fc003bc2972970b6f',
+  apiKey: 'AIzaSyCdGPyPKO2TO_rT7rLxO4rEyVNq6pXKFE8',
+  authDomain: 'osrsquery.firebaseapp.com',
+  projectId: 'osrsquery',
+  storageBucket: 'osrsquery.appspot.com',
+  messagingSenderId: '222766744122',
+  appId: '1:222766744122:web:3c79226a7d066fa9ddab03',
 }

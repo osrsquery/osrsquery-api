@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "giraffeql-boilerplate"
+    "default": "osrsquery"
   },
   "targets": {}
 }
