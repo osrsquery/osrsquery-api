@@ -1,5 +1,10 @@
+import { lookupSymbol } from "giraffeql";
 import { servicesMap } from "../..";
-import { AccessControlMap, ServiceFunctionInputs } from "../../../types";
+import {
+  AccessControlMap,
+  ExternalQuery,
+  ServiceFunctionInputs,
+} from "../../../types";
 import { permissionsCheck } from "../../core/helpers/permissions";
 import { NormalService, PaginatedService } from "../../core/services";
 import {
@@ -10,6 +15,17 @@ import { GameType, GameVersionGameTypeLink } from "../../services";
 
 export class GameVersionService extends PaginatedService {
   defaultTypename = "gameVersion";
+
+  presets: ExternalQuery = {
+    default: {
+      id: lookupSymbol,
+      name: lookupSymbol,
+      description: lookupSymbol,
+      avatar: lookupSymbol,
+      generation: lookupSymbol,
+      isLatest: lookupSymbol,
+    },
+  };
 
   filterFieldsMap = {
     id: {},

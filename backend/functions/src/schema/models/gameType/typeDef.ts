@@ -32,6 +32,7 @@ export default new GiraffeqlObjectType(<ObjectTypeDefinition>{
     }),
     fieldsMap: generateJSONField({
       allowNull: false,
+      jsonString: false,
       sqlOptions: {
         field: "fields_map",
       },

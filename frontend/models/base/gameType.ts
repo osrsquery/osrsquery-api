@@ -50,13 +50,13 @@ export const GameType = <RecordInfo<'gameType'>>{
           },
         ],
       },
-      parseValue: (val) => {
+      /*       parseValue: (val) => {
         return JSON.stringify(val)
       },
       serialize: (val) => {
         if (typeof val !== 'string') return []
         return JSON.parse(val)
-      },
+      }, */
     },
     nameWithAvatar: {
       text: 'Name',

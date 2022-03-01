@@ -8,6 +8,7 @@ import {
   GiraffeqlInputTypeLookup,
   GiraffeqlObjectType,
   GiraffeqlInputFieldType,
+  lookupSymbol,
 } from "giraffeql";
 import { NormalService, PaginatedService, EnumService } from "../services";
 import { generatePaginatorPivotResolverObject } from "../helpers/typeDef";
@@ -70,7 +71,68 @@ export function generateBaseRootResolvers(
             restOptions: {
               method: "get",
               route: "/" + service.typename,
-              query: service.paginator.presets.default,
+              query: {
+                paginatorInfo: {
+                  total: lookupSymbol,
+                  count: lookupSymbol,
+                },
+                edges: {
+                  cursor: lookupSymbol,
+                  node: service.presets.default,
+                },
+              },
+              argsTransformer: (req) => {
+                const args = {
+                  ...req.query,
+                  ...req.params,
+                };
+
+                // convert anything with "filterBy.*"" into a filter object
+                const filterByObject = Object.entries(args).reduce(
+                  (total, [key, value]) => {
+                    const filterMatch = key.match(/^filterBy\.(.*)/);
+                    if (filterMatch) {
+                      total[filterMatch[1]] = {
+                        eq: value,
+                      };
+
+                      // also need to delete this param from the args
+                      delete args[key];
+                    }
+
+                    return total;
+                  },
+                  {}
+                );
+
+                // add it to the args
+                args.filterBy = Object.keys(filterByObject).length
+                  ? [filterByObject]
+                  : [];
+
+                // convert anything with "sortBy.*=asc/desc" into a sortBy object
+                const sortByArray = Object.entries(args).reduce(
+                  (total, [key, value]) => {
+                    const filterMatch = key.match(/^sortBy\.(.*)/);
+                    if (filterMatch) {
+                      total.push({
+                        field: filterMatch[1],
+                        desc: value === "desc",
+                      });
+
+                      // also need to delete this param from the args
+                      delete args[key];
+                    }
+
+                    return total;
+                  },
+                  <any>[]
+                );
+
+                args.sortBy = sortByArray;
+
+                return args;
+              },
             },
             ...generatePaginatorPivotResolverObject({
               pivotService: service,
@@ -333,9 +395,9 @@ export function generateBaseRootResolvers(
   return rootResolvers;
 }
 
-export function generateEnumRootResolver(
-  enumService: EnumService
-): { [x: string]: GiraffeqlRootResolverType } {
+export function generateEnumRootResolver(enumService: EnumService): {
+  [x: string]: GiraffeqlRootResolverType;
+} {
   const capitalizedClass = capitalizeString(enumService.paginator.typename);
   const methodName = "get" + capitalizedClass;
   const rootResolvers = {

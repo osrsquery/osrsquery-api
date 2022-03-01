@@ -13,6 +13,7 @@ export class PaginatorService extends SimpleService {
     this.typeDef = new GiraffeqlObjectType(
       generatePaginatorTypeDef(service, this)
     );
+
     this.presets = {
       default: {
         paginatorInfo: {

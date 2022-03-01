@@ -11,6 +11,7 @@ import {
   generateIntegerField,
   generateJSONField,
 } from "../../core/helpers/typeDef";
+import * as Scalars from "../../scalars";
 
 export default new GiraffeqlObjectType(<ObjectTypeDefinition>{
   name: Health.typename,
@@ -33,6 +34,7 @@ export default new GiraffeqlObjectType(<ObjectTypeDefinition>{
     }),
     data: generateJSONField({
       allowNull: false,
+      jsonString: false,
     }),
     ...generateCreatedAtField(),
     ...generateUpdatedAtField(),
