@@ -13,6 +13,7 @@ import {
 import { NormalService, PaginatedService, EnumService } from "../services";
 import { generatePaginatorPivotResolverObject } from "../helpers/typeDef";
 import { capitalizeString, isObject } from "../helpers/shared";
+import { Request } from "express";
 type BaseRootResolverTypes =
   | "get"
   | "getMultiple"
@@ -24,27 +25,96 @@ type BaseRootResolverTypes =
   | "updated"
   | "listUpdated";
 
-export function generateBaseRootResolvers(
-  service: NormalService,
-  methods: BaseRootResolverTypes[]
-): { [x: string]: GiraffeqlRootResolverType } {
+export function transformGetMultipleRestArgs(req: Request) {
+  const args = {
+    ...req.query,
+    ...req.params,
+  };
+
+  // convert anything with "filterBy-<eq>.*"" into a filter object
+  const filterByObject = Object.entries(args).reduce((total, [key, value]) => {
+    const filterMatch = key.match(/^filterBy-([a-z]+)\.(.*)/);
+    if (filterMatch) {
+      total[filterMatch[2]] = {
+        [filterMatch[1]]: value,
+      };
+
+      // also need to delete this param from the args
+      delete args[key];
+    }
+
+    return total;
+  }, {});
+
+  // add it to the args
+  args.filterBy = Object.keys(filterByObject).length ? [filterByObject] : [];
+
+  // convert anything with "sortBy.*=asc/desc" into a sortBy object
+  const sortByArray = Object.entries(args).reduce((total, [key, value]) => {
+    const filterMatch = key.match(/^sortBy\.(.*)/);
+    if (filterMatch) {
+      total.push({
+        field: filterMatch[1],
+        desc: value === "desc",
+      });
+
+      // also need to delete this param from the args
+      delete args[key];
+    }
+
+    return total;
+  }, <any>[]);
+
+  args.sortBy = sortByArray;
+
+  return args;
+}
+
+export function generateBaseRootResolvers({
+  service,
+  methods,
+  restMethods = [],
+}: {
+  service: NormalService;
+  methods: BaseRootResolverTypes[];
+  restMethods?:
+    | BaseRootResolverTypes[]
+    | {
+        [x in BaseRootResolverTypes]?: Partial<
+          RootResolverDefinition["restOptions"]
+        >;
+      };
+}): { [x: string]: GiraffeqlRootResolverType } {
   const capitalizedClass = capitalizeString(service.typename);
 
   const rootResolvers = {};
 
+  const restMethodsArray = Array.isArray(restMethods)
+    ? restMethods
+    : Object.keys(restMethods);
+
+  // if more than one rest method and no defaultQuery, throw err
+  if (restMethodsArray.length > 0 && !service.defaultQuery) {
+    throw new GiraffeqlInitializationError({
+      message: `Default REST Query must be defined for '${service.typename}'`,
+    });
+  }
+
   methods.forEach((method) => {
     const capitalizedMethod = capitalizeString(method);
-    let methodName;
     switch (method) {
-      case "get":
-        methodName = method + capitalizedClass;
+      case "get": {
+        const methodName = method + capitalizedClass;
         rootResolvers[methodName] = new GiraffeqlRootResolverType({
           name: methodName,
-          restOptions: {
-            method: "get",
-            route: "/" + service.typename + "/:id",
-            query: service.presets.default,
-          },
+          ...(restMethodsArray.includes(method) && {
+            restOptions: {
+              method: "get",
+              route: `/${service.typename}/:id`,
+              query: service.defaultQuery,
+              ...restMethods[method],
+            },
+          }),
           type: service.typeDefLookup,
           allowNull: false,
           args: new GiraffeqlInputFieldType({
@@ -61,79 +131,33 @@ export function generateBaseRootResolvers(
           },
         });
         break;
-      case "getMultiple":
+      }
+      case "getMultiple": {
         if (service instanceof PaginatedService) {
-          methodName = "get" + capitalizeString(service.paginator.typename);
+          const methodName =
+            "get" + capitalizeString(service.paginator.typename);
           rootResolvers[methodName] = new GiraffeqlRootResolverType(<
             RootResolverDefinition
           >{
             name: methodName,
-            restOptions: {
-              method: "get",
-              route: "/" + service.typename,
-              query: {
-                paginatorInfo: {
-                  total: lookupSymbol,
-                  count: lookupSymbol,
-                },
-                edges: {
-                  cursor: lookupSymbol,
-                  node: service.presets.default,
-                },
-              },
-              argsTransformer: (req) => {
-                const args = {
-                  ...req.query,
-                  ...req.params,
-                };
-
-                // convert anything with "filterBy.*"" into a filter object
-                const filterByObject = Object.entries(args).reduce(
-                  (total, [key, value]) => {
-                    const filterMatch = key.match(/^filterBy\.(.*)/);
-                    if (filterMatch) {
-                      total[filterMatch[1]] = {
-                        eq: value,
-                      };
-
-                      // also need to delete this param from the args
-                      delete args[key];
-                    }
-
-                    return total;
+            ...(restMethodsArray.includes(method) && {
+              restOptions: {
+                method: "get",
+                route: "/" + service.typename,
+                query: {
+                  paginatorInfo: {
+                    total: lookupSymbol,
+                    count: lookupSymbol,
                   },
-                  {}
-                );
-
-                // add it to the args
-                args.filterBy = Object.keys(filterByObject).length
-                  ? [filterByObject]
-                  : [];
-
-                // convert anything with "sortBy.*=asc/desc" into a sortBy object
-                const sortByArray = Object.entries(args).reduce(
-                  (total, [key, value]) => {
-                    const filterMatch = key.match(/^sortBy\.(.*)/);
-                    if (filterMatch) {
-                      total.push({
-                        field: filterMatch[1],
-                        desc: value === "desc",
-                      });
-
-                      // also need to delete this param from the args
-                      delete args[key];
-                    }
-
-                    return total;
+                  edges: {
+                    cursor: lookupSymbol,
+                    node: service.defaultQuery,
                   },
-                  <any>[]
-                );
-
-                args.sortBy = sortByArray;
-
-                return args;
+                },
+                argsTransformer: transformGetMultipleRestArgs,
+                ...restMethods[method],
               },
-            },
+            }),
             ...generatePaginatorPivotResolverObject({
               pivotService: service,
             }),
@@ -144,15 +168,18 @@ export function generateBaseRootResolvers(
           });
         }
         break;
-      case "delete":
-        methodName = method + capitalizedClass;
+      }
+      case "delete": {
+        const methodName = method + capitalizedClass;
         rootResolvers[methodName] = new GiraffeqlRootResolverType({
           name: methodName,
-          restOptions: {
-            method: "delete",
-            route: "/" + service.typename + "/:id",
-            query: service.presets.default,
-          },
+          ...(restMethodsArray.includes(method) && {
+            restOptions: {
+              method: "delete",
+              route: "/" + service.typename + "/:id",
+              query: service.defaultQuery,
+            },
+          }),
           type: service.typeDefLookup,
           allowNull: false,
           args: new GiraffeqlInputFieldType({
@@ -168,9 +195,10 @@ export function generateBaseRootResolvers(
             }),
         });
         break;
-      case "update":
+      }
+      case "update": {
         const updateArgs = {};
-        methodName = method + capitalizedClass;
+        const methodName = method + capitalizedClass;
         Object.entries(service.getTypeDef().definition.fields).forEach(
           ([key, typeDefField]) => {
             let typeField = typeDefField.type;
@@ -197,11 +225,13 @@ export function generateBaseRootResolvers(
         );
         rootResolvers[methodName] = new GiraffeqlRootResolverType({
           name: methodName,
-          restOptions: {
-            method: "put",
-            route: "/" + service.typename + "/:id",
-            query: service.presets.default,
-          },
+          ...(restMethodsArray.includes(method) && {
+            restOptions: {
+              method: "put",
+              route: "/" + service.typename + "/:id",
+              query: service.defaultQuery,
+            },
+          }),
           type: service.typeDefLookup,
           allowNull: false,
           args: new GiraffeqlInputFieldType({
@@ -243,9 +273,10 @@ export function generateBaseRootResolvers(
             service.updateRecord({ req, query, args, fieldPath }),
         });
         break;
-      case "create":
+      }
+      case "create": {
         const createArgs = {};
-        methodName = method + capitalizedClass;
+        const methodName = method + capitalizedClass;
         Object.entries(service.getTypeDef().definition.fields).forEach(
           ([key, typeDefField]) => {
             let typeField = typeDefField.type;
@@ -272,11 +303,13 @@ export function generateBaseRootResolvers(
         );
         rootResolvers[methodName] = new GiraffeqlRootResolverType({
           name: methodName,
-          restOptions: {
-            method: "post",
-            route: "/" + service.typename,
-            query: service.presets.default,
-          },
+          ...(restMethodsArray.includes(method) && {
+            restOptions: {
+              method: "post",
+              route: "/" + service.typename,
+              query: service.defaultQuery,
+            },
+          }),
           type: service.typeDefLookup,
           allowNull: false,
           args: new GiraffeqlInputFieldType({
@@ -295,15 +328,18 @@ export function generateBaseRootResolvers(
             }),
         });
         break;
-      case "created":
-        methodName = service.typename + capitalizedMethod;
+      }
+      case "created": {
+        const methodName = service.typename + capitalizedMethod;
         rootResolvers[methodName] = new GiraffeqlRootResolverType({
           name: methodName,
-          restOptions: {
-            method: "post",
-            route: "/subscribe/" + service.typename + capitalizedMethod,
-            query: service.presets.default,
-          },
+          ...(restMethodsArray.includes(method) && {
+            restOptions: {
+              method: "post",
+              route: "/subscribe/" + service.typename + capitalizedMethod,
+              query: service.defaultQuery,
+            },
+          }),
           type: service.typeDefLookup,
           allowNull: false,
           resolver: ({ req, query, args, fieldPath }) =>
@@ -318,15 +354,18 @@ export function generateBaseRootResolvers(
             ),
         });
         break;
-      case "deleted":
-        methodName = service.typename + capitalizedMethod;
+      }
+      case "deleted": {
+        const methodName = service.typename + capitalizedMethod;
         rootResolvers[methodName] = new GiraffeqlRootResolverType({
           name: methodName,
-          restOptions: {
-            method: "post",
-            route: "/subscribe/" + service.typename + capitalizedMethod,
-            query: service.presets.default,
-          },
+          ...(restMethodsArray.includes(method) && {
+            restOptions: {
+              method: "post",
+              route: "/subscribe/" + service.typename + capitalizedMethod,
+              query: service.defaultQuery,
+            },
+          }),
           type: service.typeDefLookup,
           allowNull: false,
           resolver: ({ req, query, args, fieldPath }) =>
@@ -341,15 +380,18 @@ export function generateBaseRootResolvers(
             ),
         });
         break;
-      case "updated":
-        methodName = service.typename + capitalizedMethod;
+      }
+      case "updated": {
+        const methodName = service.typename + capitalizedMethod;
         rootResolvers[methodName] = new GiraffeqlRootResolverType({
           name: methodName,
-          restOptions: {
-            method: "post",
-            route: "/subscribe/" + service.typename + capitalizedMethod,
-            query: service.presets.default,
-          },
+          ...(restMethodsArray.includes(method) && {
+            restOptions: {
+              method: "post",
+              route: "/subscribe/" + service.typename + capitalizedMethod,
+              query: service.defaultQuery,
+            },
+          }),
           type: service.typeDefLookup,
           allowNull: false,
           resolver: ({ req, query, args, fieldPath }) =>
@@ -364,15 +406,18 @@ export function generateBaseRootResolvers(
             ),
         });
         break;
-      case "listUpdated":
-        methodName = service.typename + capitalizedMethod;
+      }
+      case "listUpdated": {
+        const methodName = service.typename + capitalizedMethod;
         rootResolvers[methodName] = new GiraffeqlRootResolverType({
           name: methodName,
-          restOptions: {
-            method: "post",
-            route: "/subscribe/" + service.typename + capitalizedMethod,
-            query: service.presets.default,
-          },
+          ...(restMethodsArray.includes(method) && {
+            restOptions: {
+              method: "post",
+              route: "/subscribe/" + service.typename + capitalizedMethod,
+              query: service.defaultQuery,
+            },
+          }),
           type: service.typeDefLookup,
           allowNull: false,
           resolver: ({ req, query, args, fieldPath }) =>
@@ -387,6 +432,8 @@ export function generateBaseRootResolvers(
             ),
         });
         break;
+      }
+
       default:
         throw new Error(`Unknown root resolver method requested: '${method}'`);
     }
@@ -403,11 +450,13 @@ export function generateEnumRootResolver(enumService: EnumService): {
   const rootResolvers = {
     [methodName]: new GiraffeqlRootResolverType({
       name: methodName,
-      restOptions: {
-        method: "get",
-        route: "/" + enumService.paginator.typename,
-        query: enumService.presets.default,
-      },
+      ...(enumService.defaultQuery && {
+        restOptions: {
+          method: "get",
+          route: "/" + enumService.paginator.typename,
+          query: enumService.defaultQuery,
+        },
+      }),
       allowNull: false,
       type: enumService.paginator.typeDef,
       resolver: ({ req, args, query, fieldPath }) =>

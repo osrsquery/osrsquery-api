@@ -62,7 +62,7 @@ export async function up(knex: Knex): Promise<void[]> {
     }),
     knex.schema.createTable("health", function (table) {
       table.string("id").notNullable().primary();
-      table.string("game_id").notNullable();
+      table.integer("game_id").notNullable();
       table.string("game_version").notNullable();
       table.integer("health_scale").notNullable();
       table.jsonb("data").notNullable();

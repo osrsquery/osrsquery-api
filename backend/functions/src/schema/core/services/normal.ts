@@ -29,9 +29,10 @@ import {
   GiraffeqlInitializationError,
   GiraffeqlScalarType,
   GiraffeqlBaseError,
+  lookupSymbol,
 } from "giraffeql";
 
-import { ServiceFunctionInputs } from "../../../types";
+import { ExternalQuery, ServiceFunctionInputs } from "../../../types";
 
 import { btoa, escapeRegExp, generateId, isObject } from "../helpers/shared";
 import {
@@ -51,16 +52,16 @@ export type FieldMap = {
   [x: string]: FieldObject;
 };
 
-export type ExternalQuery = {
-  [x: string]: any;
-};
-
 export type KeyMap = {
   [x: string]: string[];
 };
 
 export class NormalService extends BaseService {
   typeDef!: GiraffeqlObjectType;
+
+  defaultQuery: ExternalQuery = {
+    id: lookupSymbol,
+  };
 
   typeDefLookup: GiraffeqlObjectTypeLookup;
 
@@ -96,19 +97,21 @@ export class NormalService extends BaseService {
       const uniqueKeyMap = {};
       Object.entries(this.uniqueKeyMap).forEach(([uniqueKeyName, entry]) => {
         entry.forEach((key) => {
-          const typeDefField = this.getTypeDef().definition.fields[key];
+          const keyPrefix = key.split(".")[0];
+
+          const typeDefField = this.getTypeDef().definition.fields[keyPrefix];
           if (!typeDefField) {
             throw new GiraffeqlInitializationError({
               message: `Unique key map field not found. Nested values not allowed`,
             });
           }
 
-          this.getTypeDef().definition.fields[key].allowNull;
-          uniqueKeyMap[key] = new GiraffeqlInputFieldType({
+          this.getTypeDef().definition.fields[keyPrefix].allowNull;
+          uniqueKeyMap[keyPrefix] = new GiraffeqlInputFieldType({
             type:
               typeDefField.type instanceof GiraffeqlScalarType
                 ? typeDefField.type
-                : new GiraffeqlInputTypeLookup(key),
+                : new GiraffeqlInputTypeLookup(keyPrefix),
             allowNull: typeDefField.allowNull,
           });
         });
@@ -180,14 +183,13 @@ export class NormalService extends BaseService {
   ) {
     // args should be validated already
     const validatedArgs = <any>args;
-    const selectQuery = query || Object.assign({}, this.presets.default);
 
     //check if the record and query is fetchable
     const results = await getObjectType({
       typename: this.typename,
       req,
       fieldPath,
-      externalQuery: selectQuery,
+      externalQuery: query,
       sqlParams: {
         where: {
           id: validatedArgs.id,
@@ -209,7 +211,7 @@ export class NormalService extends BaseService {
       req,
       operationName,
       subscriptionFilterableArgs,
-      query || Object.assign({}, this.presets.default)
+      query ??{ ... this.defaultQuery }
     );
 
     return {
@@ -234,12 +236,10 @@ export class NormalService extends BaseService {
     // args should be validated already
     const validatedArgs = <any>args;
 
-    const selectQuery = query || Object.assign({}, this.presets.default);
-
     //check if the query is valid (no need to actually run it)
     /*     if (this.typeDef)
       generateGiraffeqlResolverTreeFromTypeDefinition(
-        selectQuery,
+        query,
         this.typeDef,
         this.typename,
         fieldPath,
@@ -256,7 +256,7 @@ export class NormalService extends BaseService {
       req,
       operationName,
       subscriptionFilterableArgs,
-      selectQuery
+      query
     );
 
     return {
@@ -278,8 +278,6 @@ export class NormalService extends BaseService {
     const validatedArgs = <any>args;
     await this.handleLookupArgs(args, fieldPath);
 
-    const selectQuery = query ?? Object.assign({}, this.presets.default);
-
     const whereObject: SqlWhereObject = {
       connective: "AND",
       fields: [],
@@ -298,7 +296,7 @@ export class NormalService extends BaseService {
       typename: this.typename,
       req,
       fieldPath,
-      externalQuery: selectQuery,
+      externalQuery: query,
       sqlParams: {
         where: [whereObject],
         limit: 1,
@@ -406,7 +404,6 @@ export class NormalService extends BaseService {
   }: ServiceFunctionInputs) {
     // args should be validated already
     const validatedArgs = <any>args;
-    const selectQuery = query || Object.assign({}, this.presets.default);
 
     const whereObject: SqlWhereObject = {
       connective: "AND",
@@ -575,7 +572,7 @@ export class NormalService extends BaseService {
       typename: this.typename,
       req,
       fieldPath,
-      externalQuery: selectQuery,
+      externalQuery: query,
       rawSelect,
       sqlParams,
       data,

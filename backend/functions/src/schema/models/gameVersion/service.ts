@@ -16,20 +16,23 @@ import { GameType, GameVersionGameTypeLink } from "../../services";
 export class GameVersionService extends PaginatedService {
   defaultTypename = "gameVersion";
 
-  presets: ExternalQuery = {
-    default: {
-      id: lookupSymbol,
-      name: lookupSymbol,
-      description: lookupSymbol,
-      avatar: lookupSymbol,
-      generation: lookupSymbol,
-      isLatest: lookupSymbol,
-    },
+  defaultQuery: ExternalQuery = {
+    id: lookupSymbol,
+    name: lookupSymbol,
+    description: lookupSymbol,
+    avatar: lookupSymbol,
+    generation: lookupSymbol,
+    isLatest: lookupSymbol,
   };
 
   filterFieldsMap = {
     id: {},
     "createdBy.id": {},
+  };
+
+  uniqueKeyMap = {
+    primary: ["id"],
+    secondary: ["generation"],
   };
 
   sortFieldsMap = {

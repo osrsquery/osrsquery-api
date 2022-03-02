@@ -5,13 +5,11 @@ import {
   generateCreatedAtField,
   generateUpdatedAtField,
   generateCreatedByField,
-  generateStringField,
   generateTypenameField,
   generateJoinableField,
   generateIntegerField,
   generateJSONField,
 } from "../../core/helpers/typeDef";
-import * as Scalars from "../../scalars";
 
 export default new GiraffeqlObjectType(<ObjectTypeDefinition>{
   name: Health.typename,
@@ -19,7 +17,7 @@ export default new GiraffeqlObjectType(<ObjectTypeDefinition>{
   fields: {
     ...generateIdField(),
     ...generateTypenameField(Health),
-    gameId: generateStringField({
+    gameId: generateIntegerField({
       allowNull: false,
       sqlOptions: { field: "game_id", unique: "gameId-gameVersion" },
     }),

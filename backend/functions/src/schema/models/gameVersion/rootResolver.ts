@@ -3,13 +3,18 @@ import { generateBaseRootResolvers } from "../../core/helpers/rootResolver";
 import { GiraffeqlInputFieldType, GiraffeqlRootResolverType } from "giraffeql";
 
 export default {
-  ...generateBaseRootResolvers(GameVersion, [
-    "get",
-    "getMultiple",
-    "delete",
-    "create",
-    "update",
-  ]),
+  ...generateBaseRootResolvers({
+    service: GameVersion,
+    methods: ["get", "getMultiple", "delete", "create", "update"],
+    restMethods: {
+      get: {
+        route: `/rev/:generation`,
+      },
+      getMultiple: {
+        route: `/rev`,
+      },
+    },
+  }),
 
   // syncs the gameTypeLinks
   syncGameTypeLinks: new GiraffeqlRootResolverType({

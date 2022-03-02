@@ -5,23 +5,21 @@ import { PaginatedService } from "../../core/services";
 export class HealthService extends PaginatedService {
   defaultTypename = "health";
 
-  presets: ExternalQuery = {
-    default: {
-      id: lookupSymbol,
-      gameId: lookupSymbol,
-      gameVersion: {
-        id: lookupSymbol,
-        name: lookupSymbol,
-      },
-      healthScale: lookupSymbol,
-      data: lookupSymbol,
-    },
+  defaultQuery: ExternalQuery = {
+    gameId: lookupSymbol,
+    data: lookupSymbol,
+  };
+
+  uniqueKeyMap = {
+    primary: ["id"],
+    secondary: ["gameId", "gameVersion"],
   };
 
   filterFieldsMap = {
     id: {},
     "createdBy.id": {},
     "gameVersion.id": {},
+    "gameVersion.generation": {},
     healthScale: {},
   };
 
