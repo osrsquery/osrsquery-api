@@ -183,10 +183,7 @@ export class GameVersionService extends PaginatedService {
 
       // ensure gameId = index
       if (lastAddedGameId !== null) {
-        if (
-          gameDataResults[lastAddedGameId] !==
-          gameDataResults[lastAddedGameId].id
-        ) {
+        if (lastAddedGameId !== gameDataResults[lastAddedGameId].id) {
           throw new Error(
             `Entity gameId ${lastAddedGameId} for ${gameType.modelName} does not line up with its index`
           );
