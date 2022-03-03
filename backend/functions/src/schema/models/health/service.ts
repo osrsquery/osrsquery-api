@@ -1,23 +1,9 @@
-import { lookupSymbol } from "giraffeql";
-import { AccessControlMap, ExternalQuery } from "../../../types";
-import { PaginatedService } from "../../core/services";
+import { GameTypeModelService } from "../../helpers/gameType";
 
-export class HealthService extends PaginatedService {
+export class HealthService extends GameTypeModelService {
   defaultTypename = "health";
 
-  defaultQuery: ExternalQuery = {
-    gameId: lookupSymbol,
-    data: lookupSymbol,
-  };
-
-  uniqueKeyMap = {
-    primary: ["id"],
-    secondary: ["gameId", "gameVersion"],
-  };
-
   filterFieldsMap = {
-    id: {},
-    "createdBy.id": {},
     "gameVersion.id": {},
     "gameVersion.generation": {},
     field3272: {},
@@ -33,9 +19,6 @@ export class HealthService extends PaginatedService {
   };
 
   sortFieldsMap = {
-    id: {},
-    createdAt: {},
-    updatedAt: {},
     field3272: {},
     field3275: {},
     field3276: {},
@@ -46,14 +29,5 @@ export class HealthService extends PaginatedService {
     healthBarPadding: {},
     healthBarBackSpriteId: {},
     healthBarFrontSpriteId: {},
-  };
-
-  searchFieldsMap = {
-    name: {},
-  };
-
-  accessControl: AccessControlMap = {
-    get: () => true,
-    getMultiple: () => true,
   };
 }

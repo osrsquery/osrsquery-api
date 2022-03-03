@@ -84,7 +84,46 @@ export async function up(knex: Knex): Promise<void[]> {
       table.string("id").notNullable().primary();
       table.integer("game_id").notNullable();
       table.string("game_version").notNullable();
+      table.jsonb("file_ids").notNullable().defaultTo([]);
       table.integer("sprite").notNullable();
+      table.jsonb("data").notNullable();
+      table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
+      table.dateTime("updated_at").nullable();
+      table.string("created_by").notNullable();
+      table.unique(["game_id", "game_version"]);
+    }),
+    knex.schema.createTable("npc", function (table) {
+      table.string("id").notNullable().primary();
+      table.integer("game_id").notNullable();
+      table.string("game_version").notNullable();
+      table.string("name").notNullable();
+      table.integer("size").notNullable();
+      table.integer("category").notNullable();
+      table.jsonb("models").notNullable().defaultTo([]);
+      table.jsonb("chathead_models").notNullable().defaultTo([]);
+      table.integer("standing_animation").notNullable();
+      table.integer("rotate_left_animation").notNullable();
+      table.integer("rotate_right_animation").notNullable();
+      table.integer("walking_animation").notNullable();
+      table.integer("rotate180_animation").notNullable();
+      table.integer("rotate90_right_animation").notNullable();
+      table.integer("rotate90_left_animation").notNullable();
+      table.jsonb("actions").notNullable().defaultTo([]);
+      table.boolean("is_minimap_visible").notNullable();
+      table.integer("combat_level").notNullable();
+      table.integer("width_scale").notNullable();
+      table.integer("height_scale").notNullable();
+      table.boolean("has_render_priority").notNullable();
+      table.integer("ambient").notNullable();
+      table.integer("contrast").notNullable();
+      table.integer("head_icon").notNullable();
+      table.integer("rotation_speed").notNullable();
+      table.integer("varbit_id").notNullable();
+      table.integer("varp_index").notNullable();
+      table.boolean("is_interactable").notNullable();
+      table.boolean("rotation_flag").notNullable();
+      table.boolean("is_pet").notNullable();
+      table.jsonb("params").notNullable();
       table.jsonb("data").notNullable();
       table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
       table.dateTime("updated_at").nullable();
@@ -99,6 +138,7 @@ export async function up(knex: Knex): Promise<void[]> {
       table.dateTime("updated_at").nullable();
       table.string("created_by").notNullable();
       table.string("file_name_override").nullable();
+      table.boolean("is_synced").notNullable().defaultTo(false);
       table.unique(["game_version", "game_type"]);
     }),
     knex.schema.createTable("userUserFollowLink", function (table) {
@@ -122,6 +162,7 @@ export async function down(knex: Knex): Promise<void[]> {
     knex.schema.dropTable("gameType"),
     knex.schema.dropTable("health"),
     knex.schema.dropTable("texture"),
+    knex.schema.dropTable("npc"),
     knex.schema.dropTable("gameVersionGameTypeLink"),
     knex.schema.dropTable("userUserFollowLink"),
   ]);

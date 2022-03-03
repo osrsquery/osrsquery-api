@@ -17,6 +17,7 @@ export class GameTypeService extends PaginatedService {
     id: {},
     "createdBy.id": {},
     "gameVersionGameTypeLink/gameVersion.id": {},
+    "gameVersionGameTypeLink/isSynced": {},
   };
 
   sortFieldsMap = {

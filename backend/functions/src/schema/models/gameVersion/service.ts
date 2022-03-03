@@ -131,11 +131,12 @@ export class GameVersionService extends PaginatedService {
       fieldPath
     );
 
-    // get all valid gameTypes for this gameVersion
+    // get all valid gameTypes for this gameVersion that are not finished syncing
     const gameTypes = await GameType.getAllSqlRecord({
       select: ["id", "fileName", "modelName", "fieldsMap"],
       where: {
         "gameVersionGameTypeLink/gameVersion.id": gameVersion.id,
+        "gameVersionGameTypeLink/isSynced": false,
       },
     });
 
@@ -155,13 +156,83 @@ export class GameVersionService extends PaginatedService {
         );
 
       // delete all entries for this model given the gameVersion
+      /*
       await service.deleteSqlRecord({
         where: {
           gameVersion: gameVersion.id,
         },
       });
+      */
 
+      // get the index of the last added item for this gameVersion
+      const records = await service.getAllSqlRecord({
+        select: ["gameId"],
+        where: {
+          "gameVersion.id": gameVersion.id,
+        },
+        orderBy: [
+          {
+            field: "gameId",
+            desc: true,
+          },
+        ],
+        limit: 1,
+      });
+
+      const lastAddedGameId = records[0]?.gameId ?? null;
+
+      // ensure gameId = index
+      if (lastAddedGameId !== null) {
+        if (
+          gameDataResults[lastAddedGameId] !==
+          gameDataResults[lastAddedGameId].id
+        ) {
+          throw new Error(
+            `Entity gameId ${lastAddedGameId} for ${gameType.modelName} does not line up with its index`
+          );
+        }
+      }
+
+      let currentIndex = lastAddedGameId === null ? 0 : lastAddedGameId + 1;
+
+      // start off after the last added item, if any (assuming gameId = index)
+      for (
+        currentIndex;
+        currentIndex < gameDataResults.length;
+        currentIndex++
+      ) {
+        await service.createSqlRecord(
+          {
+            fields: gameType.fieldsMap.reduce(
+              (total, ele) => {
+                total[ele.value] = gameDataResults[currentIndex][ele.key];
+                return total;
+              },
+              {
+                gameId: gameDataResults[currentIndex].id,
+                gameVersion: gameVersion.id,
+                data: gameDataResults[currentIndex],
+                createdBy: req.user!.id,
+              }
+            ),
+          },
+          fieldPath
+        );
+      }
+      // if that was the last record, flag the gameType as synced
+      if (!gameDataResults[currentIndex + 1]) {
+        await GameVersionGameTypeLink.updateSqlRecord({
+          fields: {
+            isSynced: true,
+          },
+          where: {
+            gameVersion: gameVersion.id,
+            gameType: gameType.id,
+          },
+        });
+      }
       // add an entry for each object returned in the JSON
+      /*
       for (const gameData of gameDataResults) {
         await service.createSqlRecord(
           {
@@ -181,6 +252,7 @@ export class GameVersionService extends PaginatedService {
           fieldPath
         );
       }
+      */
     }
 
     return this.getRecord({

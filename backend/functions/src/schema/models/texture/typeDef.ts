@@ -1,40 +1,23 @@
-import { User, Texture, GameVersion } from "../../services";
-import { GiraffeqlObjectType, ObjectTypeDefinition } from "giraffeql";
+import { Texture } from "../../services";
+import { GiraffeqlObjectType } from "giraffeql";
 import {
-  generateIdField,
-  generateCreatedAtField,
-  generateUpdatedAtField,
-  generateCreatedByField,
-  generateTypenameField,
   generateIntegerField,
-  generateJoinableField,
-  generateJSONField,
+  generateArrayField,
 } from "../../core/helpers/typeDef";
+import * as Scalars from "../../scalars";
+import { generateGameTypeModelTypeDef } from "../../helpers/gameType";
 
-export default new GiraffeqlObjectType(<ObjectTypeDefinition>{
-  name: Texture.typename,
-  description: "Texture type",
-  fields: {
-    ...generateIdField(),
-    ...generateTypenameField(Texture),
-    gameId: generateIntegerField({
+export default new GiraffeqlObjectType(
+  generateGameTypeModelTypeDef(Texture, {
+    fileIds: generateArrayField({
       allowNull: false,
-      sqlOptions: { field: "game_id", unique: "gameId-gameVersion" },
-    }),
-    gameVersion: generateJoinableField({
-      service: GameVersion,
-      allowNull: false,
-      sqlOptions: { field: "game_version", unique: "gameId-gameVersion" },
+      type: Scalars.number,
+      sqlOptions: {
+        field: "file_ids",
+      },
     }),
     sprite: generateIntegerField({
       allowNull: false,
     }),
-    data: generateJSONField({
-      allowNull: false,
-      jsonString: false,
-    }),
-    ...generateCreatedAtField(),
-    ...generateUpdatedAtField(),
-    ...generateCreatedByField(User),
-  },
-});
+  })
+);

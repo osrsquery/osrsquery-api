@@ -42,21 +42,38 @@ export const GameType = <RecordInfo<'gameType'>>{
             key: 'key',
             inputType: 'text',
             text: 'From Field',
+            inputOptions: {
+              cols: 6,
+            },
           },
           {
             key: 'value',
             inputType: 'text',
             text: 'Target Field',
+            inputOptions: {
+              cols: 6,
+            },
           },
         ],
       },
-      /*       parseValue: (val) => {
-        return JSON.stringify(val)
+      parseValue: (val) => {
+        // if value is empty, set it equal to key
+        if (!Array.isArray(val)) return []
+
+        val.forEach((ele) => {
+          if (!ele.value) ele.value = ele.key
+        })
+
+        return val
       },
-      serialize: (val) => {
+      parseImportValue: (val) => {
         if (typeof val !== 'string') return []
-        return JSON.parse(val)
-      }, */
+
+        return val.split(',').map((field) => ({
+          key: field,
+          value: field,
+        }))
+      },
     },
     nameWithAvatar: {
       text: 'Name',
@@ -96,7 +113,14 @@ export const GameType = <RecordInfo<'gameType'>>{
       },
     ],
     downloadOptions: {
-      fields: ['avatar', 'name', 'description', 'fileName', 'modelName'],
+      fields: [
+        'avatar',
+        'name',
+        'description',
+        'fileName',
+        'modelName',
+        'fieldsMap',
+      ],
     },
   },
   addOptions: {
@@ -110,7 +134,14 @@ export const GameType = <RecordInfo<'gameType'>>{
     ],
   },
   importOptions: {
-    fields: ['avatar', 'name', 'description', 'fileName', 'modelName'],
+    fields: [
+      'avatar',
+      'name',
+      'description',
+      'fileName',
+      'modelName',
+      'fieldsMap',
+    ],
   },
   editOptions: {
     fields: [

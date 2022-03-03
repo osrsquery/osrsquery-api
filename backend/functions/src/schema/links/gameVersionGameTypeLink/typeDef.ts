@@ -1,6 +1,9 @@
 import { GameVersionGameTypeLink, GameType, GameVersion } from "../../services";
 import { GiraffeqlObjectType } from "giraffeql";
-import { generateStringField } from "../../core/helpers/typeDef";
+import {
+  generateBooleanField,
+  generateStringField,
+} from "../../core/helpers/typeDef";
 import { generateLinkTypeDef } from "../../core/generators";
 
 export default new GiraffeqlObjectType(
@@ -23,6 +26,13 @@ export default new GiraffeqlObjectType(
         allowNull: true,
         sqlOptions: {
           field: "file_name_override",
+        },
+      }),
+      isSynced: generateBooleanField({
+        allowNull: false,
+        defaultValue: false,
+        sqlOptions: {
+          field: "is_synced",
         },
       }),
     }

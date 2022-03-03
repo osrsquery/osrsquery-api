@@ -47,6 +47,9 @@ export const GameVersion = <RecordInfo<'gameVersion'>>{
       parseQueryValue: (val) => val === 'true',
       default: () => false,
       inputType: 'switch',
+      parseImportValue: (val) => {
+        return val === 'TRUE'
+      },
     },
     createdAt: {
       text: 'Created At',
