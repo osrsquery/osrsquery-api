@@ -34,5 +34,8 @@ export class TextureService extends PaginatedService {
     name: {},
   };
 
-  accessControl: AccessControlMap = {};
+  accessControl: AccessControlMap = {
+    get: () => true,
+    getMultiple: () => true,
+  };
 }
