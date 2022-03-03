@@ -26,9 +26,39 @@ export default new GiraffeqlObjectType(<ObjectTypeDefinition>{
       allowNull: false,
       sqlOptions: { field: "game_version", unique: "gameId-gameVersion" },
     }),
+    field3272: generateIntegerField({
+      allowNull: false,
+    }),
+    field3275: generateIntegerField({
+      allowNull: false,
+    }),
+    field3276: generateIntegerField({
+      allowNull: false,
+    }),
+    field3277: generateIntegerField({
+      allowNull: false,
+    }),
+    field3278: generateIntegerField({
+      allowNull: false,
+    }),
+    field3283: generateIntegerField({
+      allowNull: false,
+    }),
     healthScale: generateIntegerField({
       allowNull: false,
       sqlOptions: { field: "health_scale" },
+    }),
+    healthBarPadding: generateIntegerField({
+      allowNull: false,
+      sqlOptions: { field: "health_bar_padding" },
+    }),
+    healthBarBackSpriteId: generateIntegerField({
+      allowNull: false,
+      sqlOptions: { field: "health_bar_back_sprite_id" },
+    }),
+    healthBarFrontSpriteId: generateIntegerField({
+      allowNull: false,
+      sqlOptions: { field: "health_bar_front_sprite_id" },
     }),
     data: generateJSONField({
       allowNull: false,

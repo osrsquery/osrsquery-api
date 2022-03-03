@@ -64,7 +64,27 @@ export async function up(knex: Knex): Promise<void[]> {
       table.string("id").notNullable().primary();
       table.integer("game_id").notNullable();
       table.string("game_version").notNullable();
+      table.integer("field3272").notNullable();
+      table.integer("field3275").notNullable();
+      table.integer("field3276").notNullable();
+      table.integer("field3277").notNullable();
+      table.integer("field3278").notNullable();
+      table.integer("field3283").notNullable();
       table.integer("health_scale").notNullable();
+      table.integer("health_bar_padding").notNullable();
+      table.integer("health_bar_back_sprite_id").notNullable();
+      table.integer("health_bar_front_sprite_id").notNullable();
+      table.jsonb("data").notNullable();
+      table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
+      table.dateTime("updated_at").nullable();
+      table.string("created_by").notNullable();
+      table.unique(["game_id", "game_version"]);
+    }),
+    knex.schema.createTable("texture", function (table) {
+      table.string("id").notNullable().primary();
+      table.integer("game_id").notNullable();
+      table.string("game_version").notNullable();
+      table.integer("sprite").notNullable();
       table.jsonb("data").notNullable();
       table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
       table.dateTime("updated_at").nullable();
@@ -101,6 +121,7 @@ export async function down(knex: Knex): Promise<void[]> {
     knex.schema.dropTable("gameVersion"),
     knex.schema.dropTable("gameType"),
     knex.schema.dropTable("health"),
+    knex.schema.dropTable("texture"),
     knex.schema.dropTable("gameVersionGameTypeLink"),
     knex.schema.dropTable("userUserFollowLink"),
   ]);

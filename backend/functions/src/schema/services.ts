@@ -9,6 +9,7 @@ import { AdminService } from "./models/admin/service";
 import { GameVersionService } from "./models/gameVersion/service";
 import { GameTypeService } from "./models/gameType/service";
 import { HealthService } from "./models/health/service";
+import { TextureService } from "./models/texture/service"
 /** END Service Import */
 
 import { GameVersionGameTypeLinkService } from "./links/gameVersionGameTypeLink/service";
@@ -23,6 +24,7 @@ export const Admin = new AdminService();
 export const GameVersion = new GameVersionService();
 export const GameType = new GameTypeService();
 export const Health = new HealthService();
+export const Texture = new TextureService();
 /** END Service Set */
 
 export const GameVersionGameTypeLink = new GameVersionGameTypeLinkService();

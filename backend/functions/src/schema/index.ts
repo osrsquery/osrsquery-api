@@ -9,6 +9,7 @@ import file from "./models/file/typeDef";
 import gameVersion from "./models/gameVersion/typeDef";
 import gameType from "./models/gameType/typeDef";
 import health from "./models/health/typeDef";
+import texture from "./models/texture/typeDef"
 /** END TypeDef Import */
 
 import gameVersionGameTypeLink from "./links/gameVersionGameTypeLink/typeDef";
@@ -22,6 +23,7 @@ allServices.File.setTypeDef(file);
 allServices.GameVersion.setTypeDef(gameVersion);
 allServices.GameType.setTypeDef(gameType);
 allServices.Health.setTypeDef(health);
+allServices.Texture.setTypeDef(texture)
 /** END TypeDef Set */
 
 allServices.GameVersionGameTypeLink.setTypeDef(gameVersionGameTypeLink);
@@ -36,6 +38,7 @@ import Admin from "./models/admin/rootResolver";
 import GameVersion from "./models/gameVersion/rootResolver";
 import GameType from "./models/gameType/rootResolver";
 import Health from "./models/health/rootResolver";
+import Texture from "./models/texture/rootResolver"
 /** END RootResolver Import */
 
 import GameVersionGameTypeLink from "./links/gameVersionGameTypeLink/rootResolver";
@@ -50,6 +53,7 @@ allServices.Admin.setRootResolvers(Admin);
 allServices.GameVersion.setRootResolvers(GameVersion);
 allServices.GameType.setRootResolvers(GameType);
 allServices.Health.setRootResolvers(Health);
+allServices.Texture.setRootResolvers(Texture);
 /** END RootResolver Set */
 
 allServices.GameVersionGameTypeLink.setRootResolvers(GameVersionGameTypeLink);

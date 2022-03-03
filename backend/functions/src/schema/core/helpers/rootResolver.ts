@@ -26,6 +26,10 @@ type BaseRootResolverTypes =
   | "listUpdated";
 
 export function transformGetMultipleRestArgs(req: Request) {
+  // is req.query.__args defined? if so, snapshot it, delete it, and merge it in last
+  const queryArgs = <any>req.query.__args;
+  delete req.query.__args;
+
   const args = {
     ...req.query,
     ...req.params,
@@ -66,6 +70,15 @@ export function transformGetMultipleRestArgs(req: Request) {
   }, <any>[]);
 
   args.sortBy = sortByArray;
+
+  // if query.__args was specified, merge it into args last
+  if (queryArgs) {
+    const decodedArgs = JSON.parse(
+      Buffer.from(decodeURIComponent(queryArgs), "base64").toString()
+    );
+
+    Object.assign(args, decodedArgs);
+  }
 
   return args;
 }
@@ -178,6 +191,7 @@ export function generateBaseRootResolvers({
               method: "delete",
               route: "/" + service.typename + "/:id",
               query: service.defaultQuery,
+              ...restMethods[method],
             },
           }),
           type: service.typeDefLookup,
@@ -230,6 +244,15 @@ export function generateBaseRootResolvers({
               method: "put",
               route: "/" + service.typename + "/:id",
               query: service.defaultQuery,
+              argsTransformer: (req) => {
+                return {
+                  item: req.params,
+                  fields: {
+                    ...req.body,
+                  },
+                };
+              },
+              ...restMethods[method],
             },
           }),
           type: service.typeDefLookup,
@@ -308,6 +331,13 @@ export function generateBaseRootResolvers({
               method: "post",
               route: "/" + service.typename,
               query: service.defaultQuery,
+              argsTransformer: (req) => {
+                return {
+                  ...req.body,
+                  ...req.params,
+                };
+              },
+              ...restMethods[method],
             },
           }),
           type: service.typeDefLookup,

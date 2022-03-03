@@ -13,6 +13,9 @@ export default {
       getMultiple: {
         route: `/rev`,
       },
+      create: {},
+      update: {},
+      delete: {},
     },
   }),
 

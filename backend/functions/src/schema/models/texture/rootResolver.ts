@@ -1,4 +1,4 @@
-import { GameVersion, Health } from "../../services";
+import { GameVersion, Texture } from "../../services";
 import {
   generateBaseRootResolvers,
   transformGetMultipleRestArgs,
@@ -6,12 +6,12 @@ import {
 
 export default {
   ...generateBaseRootResolvers({
-    service: Health,
+    service: Texture,
     methods: ["get", "getMultiple", "delete", "create", "update"],
     restMethods: {
       get: {
         // route: `/rev/:gameVersion/${Health.typename}/:gameId`,
-        route: `/rev/:generation/${Health.typename}/:gameId`,
+        route: `/rev/:generation/${Texture.typename}/:gameId`,
         argsTransformer: async (req) => {
           // confirm existence of generation
           await GameVersion.existsSqlRecord({
@@ -36,7 +36,7 @@ export default {
         },
       },
       getMultiple: {
-        route: `/rev/:generation/${Health.typename}`,
+        route: `/rev/:generation/${Texture.typename}`,
         argsTransformer: async (req) => {
           // confirm existence of generation
           await GameVersion.existsSqlRecord({

@@ -20,14 +20,32 @@ export class HealthService extends PaginatedService {
     "createdBy.id": {},
     "gameVersion.id": {},
     "gameVersion.generation": {},
+    field3272: {},
+    field3275: {},
+    field3276: {},
+    field3277: {},
+    field3278: {},
+    field3283: {},
     healthScale: {},
+    healthBarPadding: {},
+    healthBarBackSpriteId: {},
+    healthBarFrontSpriteId: {},
   };
 
   sortFieldsMap = {
     id: {},
     createdAt: {},
     updatedAt: {},
+    field3272: {},
+    field3275: {},
+    field3276: {},
+    field3277: {},
+    field3278: {},
+    field3283: {},
     healthScale: {},
+    healthBarPadding: {},
+    healthBarBackSpriteId: {},
+    healthBarFrontSpriteId: {},
   };
 
   searchFieldsMap = {

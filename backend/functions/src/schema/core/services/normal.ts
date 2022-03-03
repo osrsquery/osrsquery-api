@@ -97,21 +97,19 @@ export class NormalService extends BaseService {
       const uniqueKeyMap = {};
       Object.entries(this.uniqueKeyMap).forEach(([uniqueKeyName, entry]) => {
         entry.forEach((key) => {
-          const keyPrefix = key.split(".")[0];
-
-          const typeDefField = this.getTypeDef().definition.fields[keyPrefix];
+          const typeDefField = this.getTypeDef().definition.fields[key];
           if (!typeDefField) {
             throw new GiraffeqlInitializationError({
               message: `Unique key map field not found. Nested values not allowed`,
             });
           }
 
-          this.getTypeDef().definition.fields[keyPrefix].allowNull;
-          uniqueKeyMap[keyPrefix] = new GiraffeqlInputFieldType({
+          this.getTypeDef().definition.fields[key].allowNull;
+          uniqueKeyMap[key] = new GiraffeqlInputFieldType({
             type:
               typeDefField.type instanceof GiraffeqlScalarType
                 ? typeDefField.type
-                : new GiraffeqlInputTypeLookup(keyPrefix),
+                : new GiraffeqlInputTypeLookup(key),
             allowNull: typeDefField.allowNull,
           });
         });
@@ -621,6 +619,27 @@ export class NormalService extends BaseService {
 
   sqlParamsModifier(sqlParams: Omit<SqlSelectQuery, "table" | "select">) {}
 
+  // confirms the existence of a record, or throws an error
+  async existsSqlRecord(
+    sqlQuery: Omit<SqlCountQuery, "table">,
+    fieldPath?: string[],
+    throwError = true
+  ): Promise<boolean> {
+    const recordsCount = await countTableRows({
+      ...sqlQuery,
+      table: this.typename,
+    });
+
+    if (recordsCount === 0 && throwError) {
+      throw new GiraffeqlBaseError({
+        message: `${this.typename} not found`,
+        fieldPath,
+      });
+    }
+
+    return recordsCount > 0;
+  }
+
   // looks up a record using its keys
   async getFirstSqlRecord(
     sqlQuery: Omit<SqlSelectQuery, "table">,
@@ -656,7 +675,7 @@ export class NormalService extends BaseService {
   }
 
   // count the records matching the criteria
-  async getSqlRecordCount(
+  async countSqlRecord(
     sqlQuery: Omit<SqlCountQuery, "table">,
     fieldPath?: string[]
   ): Promise<any> {
@@ -718,7 +737,7 @@ export class NormalService extends BaseService {
 
     const id = await generateId(this.primaryKeyLength);
     // check if the id already is in use
-    const recordsCount = await this.getSqlRecordCount(
+    const recordsCount = await this.countSqlRecord(
       {
         where: {
           id,
