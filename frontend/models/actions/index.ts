@@ -49,7 +49,7 @@ export const syncGameTypes = async (that, item) => {
   } catch (err: any) {
     // if the err is a network err, it is due to 60s fn timeout. send the request again
     if (err.message === 'Network Error') {
-      await syncGameTypeLinks(that, item)
+      await syncGameTypes(that, item)
     } else {
       handleError(that, err)
     }
