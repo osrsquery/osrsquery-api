@@ -46,7 +46,12 @@ export const syncGameTypes = async (that, item) => {
       message: 'Done Syncing',
       variant: 'success',
     })
-  } catch (err) {
-    handleError(that, err)
+  } catch (err: any) {
+    // if the err is a network err, it is due to 60s fn timeout. send the request again
+    if (err.message === 'Network Error') {
+      syncGameTypeLinks(that, item)
+    } else {
+      handleError(that, err)
+    }
   }
 }
