@@ -181,16 +181,14 @@ export class GameVersionService extends PaginatedService {
 
       const lastAddedGameId = records[0]?.gameId ?? null;
 
-      // ensure gameId = index
-      if (lastAddedGameId !== null) {
-        if (lastAddedGameId !== gameDataResults[lastAddedGameId].id) {
-          throw new Error(
-            `Entity gameId ${lastAddedGameId} for ${gameType.modelName} does not line up with its index`
-          );
-        }
-      }
-
-      let currentIndex = lastAddedGameId === null ? 0 : lastAddedGameId + 1;
+      let currentIndex =
+        lastAddedGameId === null
+          ? 0
+          : gameDataResults.indexOf(
+              gameDataResults.find(
+                (gameData) => gameData.id === lastAddedGameId
+              )
+            ) + 1;
 
       // start off after the last added item, if any (assuming gameId = index)
       for (
