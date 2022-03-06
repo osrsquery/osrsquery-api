@@ -77,7 +77,7 @@ export default new GiraffeqlObjectType(
     actions: generateArrayField({
       allowNull: false,
       allowNullElement: true,
-      type: Scalars.number,
+      type: Scalars.string,
     }),
     isMinimapVisible: generateBooleanField({
       allowNull: false,

@@ -11,6 +11,8 @@ import { GameTypeService } from "./models/gameType/service";
 import { HealthService } from "./models/health/service";
 import { TextureService } from "./models/texture/service"
 import { NpcService } from "./models/npc/service"
+import { ItemService } from "./models/item/service"
+import { ObjectService } from "./models/object/service"
 /** END Service Import */
 
 import { GameVersionGameTypeLinkService } from "./links/gameVersionGameTypeLink/service";
@@ -27,6 +29,8 @@ export const GameType = new GameTypeService();
 export const Health = new HealthService();
 export const Texture = new TextureService();
 export const Npc = new NpcService();
+export const Item = new ItemService();
+export const Object = new ObjectService();
 /** END Service Set */
 
 export const GameVersionGameTypeLink = new GameVersionGameTypeLinkService();

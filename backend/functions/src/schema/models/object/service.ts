@@ -1,13 +1,11 @@
 import { GameTypeModelService } from "../../helpers/gameType";
 
-export class NpcService extends GameTypeModelService {
-  defaultTypename = "npc";
+export class ObjectService extends GameTypeModelService {
+  defaultTypename = "object";
 
   filterFieldsMap = {
     "gameVersion.id": {},
     "gameVersion.generation": {},
-    actions: {},
-    models: {},
   };
 
   sortFieldsMap = {};
