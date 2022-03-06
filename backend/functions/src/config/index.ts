@@ -1,7 +1,5 @@
 import * as functions from "firebase-functions";
 
-console.log(JSON.stringify(process.env));
-
 export const isDev = process.env.FUNCTIONS_EMULATOR ?? process.env.DEV;
 
 export const env = isDev ? require("../../../env.json") : functions.config();
