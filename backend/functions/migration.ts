@@ -203,7 +203,7 @@ export async function up(knex: Knex): Promise<void[]> {
       table.integer("interact_type").notNullable();
       table.integer("map_scene_id").notNullable();
       table.integer("blocking_mask").notNullable();
-      table.integer("shadow").notNullable();
+      table.boolean("shadow").notNullable();
       table.integer("model_size_x").notNullable();
       table.integer("model_size_height").notNullable();
       table.integer("model_size_y").notNullable();

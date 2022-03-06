@@ -82,7 +82,7 @@ export default new GiraffeqlObjectType(
       allowNull: false,
       sqlOptions: { field: "blocking_mask" },
     }),
-    shadow: generateIntegerField({
+    shadow: generateBooleanField({
       allowNull: false,
     }),
     modelSizeX: generateIntegerField({
