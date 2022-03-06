@@ -19,7 +19,7 @@ export class TimeoutError extends GiraffeqlBaseError {
       errorName: "TimeoutError",
       message,
       fieldPath,
-      statusCode: 504,
+      statusCode: 500,
     });
   }
 }
