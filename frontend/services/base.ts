@@ -323,7 +323,7 @@ export function getBuildVersion() {
 export function handleError(that, err) {
   if (that) {
     // error thrown by server
-    if (err.response && err.response.data.error.message) {
+    if (err.response?.data.error) {
       that.$notifier.showSnackbar({
         message: `${
           err.response.data.error.message

@@ -5,7 +5,7 @@ admin.initializeApp();
 
 import { initializeGiraffeql } from "giraffeql";
 import "./schema";
-import { env, giraffeqlOptions } from "./config";
+import { env, functionTimeoutSeconds, giraffeqlOptions } from "./config";
 
 import { validateToken, validateApiKey } from "./helpers/auth";
 import { CustomSchemaGenerator } from "./helpers/schema";
@@ -27,6 +27,9 @@ if (env.base?.origins) {
 
 // extract the user ID from all requests.
 app.use(async function (req, res, next) {
+  // set the start time
+  req.startTime = Date.now();
+
   try {
     // if api key provided, attempt to validate using that
     const apiKey = req.get("x-api-key");
@@ -80,7 +83,7 @@ app.get("/schema.ts", function (req, res, next) {
 
 export const api = functions
   .runWith({
-    timeoutSeconds: 300,
+    timeoutSeconds: functionTimeoutSeconds,
     memory: "256MB",
   })
   .https.onRequest(app);
