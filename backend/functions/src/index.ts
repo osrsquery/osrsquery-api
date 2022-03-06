@@ -78,7 +78,12 @@ app.get("/schema.ts", function (req, res, next) {
   res.send(tsSchemaGenerator.outputSchema());
 });
 
-export const api = functions.https.onRequest(app);
+export const api = functions
+  .runWith({
+    timeoutSeconds: 300,
+    memory: "256MB",
+  })
+  .https.onRequest(app);
 
 export { serveImage } from "./misc/serveImage";
 
