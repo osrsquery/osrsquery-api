@@ -157,7 +157,7 @@ export function extractLastValueColumns(
   return lastValues;
 }
 
-// returns a boolean saying if the request is about to be timed out (10 sec before timeout)
+// returns a boolean saying if the request is about to be timed out (5 sec before timeout)
 export function isTimeoutImminent(req: Request) {
-  return Date.now() - req.startTime > functionTimeoutSeconds * 1000 - 10000;
+  return Date.now() - req.startTime > functionTimeoutSeconds * 1000 - 5000;
 }

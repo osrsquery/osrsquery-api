@@ -157,15 +157,6 @@ export class GameVersionService extends PaginatedService {
           `Service for model: '${gameType.modelName}' must be a NormalService`
         );
 
-      // delete all entries for this model given the gameVersion
-      /*
-      await service.deleteSqlRecord({
-        where: {
-          gameVersion: gameVersion.id,
-        },
-      });
-      */
-
       // get the index of the last added item for this gameVersion
       const records = await service.getAllSqlRecord({
         select: ["gameId"],
@@ -216,7 +207,7 @@ export class GameVersionService extends PaginatedService {
           fieldPath
         );
 
-        // check if the function is in danger of being timed out. if yes, break out of the loops and return
+        // check if the function is in danger of being timed out. if yes, throws a TimeoutError.
         if (isTimeoutImminent(req)) {
           throw generateTimeoutError(
             fieldPath,
@@ -236,28 +227,6 @@ export class GameVersionService extends PaginatedService {
           },
         });
       }
-      // add an entry for each object returned in the JSON
-      /*
-      for (const gameData of gameDataResults) {
-        await service.createSqlRecord(
-          {
-            fields: gameType.fieldsMap.reduce(
-              (total, ele) => {
-                total[ele.value] = gameData[ele.key];
-                return total;
-              },
-              {
-                gameId: gameData.id,
-                gameVersion: gameVersion.id,
-                data: gameData,
-                createdBy: req.user!.id,
-              }
-            ),
-          },
-          fieldPath
-        );
-      }
-      */
     }
 
     return this.getRecord({
