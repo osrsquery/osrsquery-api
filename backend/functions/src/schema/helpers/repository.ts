@@ -10,14 +10,13 @@ const repositoryFileCache: Map<string, string> = new Map();
 
 // will return a cached version if available, else will fetch new and cache
 export async function fetchRepositoryData(path: string) {
-  const fullPath = `${env.repository.base_url}/${path}`;
-  if (repositoryFileCache.has(fullPath)) {
-    return repositoryFileCache.get(fullPath);
+  if (repositoryFileCache.has(path)) {
+    return repositoryFileCache.get(path);
   }
 
   const { data } = await axios.get(`${env.repository.base_url}/${path}`);
 
-  repositoryFileCache.set(fullPath, data);
+  repositoryFileCache.set(path, data);
 
   return data;
 }

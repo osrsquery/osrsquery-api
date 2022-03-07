@@ -5,7 +5,7 @@ import {
 } from "../../../types";
 import { userPermissionEnum } from "../../enums";
 import { GiraffeqlRootResolverType } from "giraffeql";
-import { generatePermissionsError, PermissionsError } from "../helpers/error";
+import { PermissionsError } from "../helpers/error";
 
 export abstract class BaseService {
   typename: string;
@@ -82,12 +82,18 @@ export abstract class BaseService {
           : false;
       }
 
-      if (!allowed) throw generatePermissionsError(fieldPath);
+      if (!allowed)
+        throw new PermissionsError({
+          fieldPath,
+        });
 
       return allowed;
     } catch (err: unknown) {
       if (err instanceof Error && !(err instanceof PermissionsError)) {
-        throw generatePermissionsError(fieldPath, err.message);
+        throw new PermissionsError({
+          fieldPath,
+          message: err.message,
+        });
       }
 
       throw err;

@@ -7,7 +7,7 @@ export class PermissionsError extends GiraffeqlBaseError {
       errorName: "PermissionsError",
       message,
       fieldPath,
-      statusCode: 401,
+      statusCode: 403,
     });
   }
 }
@@ -20,6 +20,18 @@ export class TimeoutError extends GiraffeqlBaseError {
       message,
       fieldPath,
       statusCode: 500,
+    });
+  }
+}
+
+export class AuthenticationError extends GiraffeqlBaseError {
+  constructor(params: { message?: string; fieldPath?: string[] }) {
+    const { message = "Error authenticating", fieldPath = [] } = params;
+    super({
+      errorName: "AuthenticationError",
+      message,
+      fieldPath,
+      statusCode: 401,
     });
   }
 }
@@ -38,24 +50,4 @@ export function generateError(
 
 export function itemNotFoundError(fieldPath: string[]): GiraffeqlBaseError {
   return generateError("Record was not found", fieldPath, 404);
-}
-
-export function generatePermissionsError(
-  fieldPath?: string[],
-  message?: string
-): PermissionsError {
-  return new PermissionsError({
-    message,
-    fieldPath,
-  });
-}
-
-export function generateTimeoutError(
-  fieldPath?: string[],
-  message?: string
-): TimeoutError {
-  return new TimeoutError({
-    message,
-    fieldPath,
-  });
 }

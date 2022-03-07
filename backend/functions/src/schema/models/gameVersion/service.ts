@@ -5,7 +5,7 @@ import {
   ExternalQuery,
   ServiceFunctionInputs,
 } from "../../../types";
-import { generateTimeoutError } from "../../core/helpers/error";
+import { TimeoutError } from "../../core/helpers/error";
 import { permissionsCheck } from "../../core/helpers/permissions";
 import { isTimeoutImminent } from "../../core/helpers/shared";
 import { NormalService, PaginatedService } from "../../core/services";
@@ -209,10 +209,10 @@ export class GameVersionService extends PaginatedService {
 
         // check if the function is in danger of being timed out. if yes, throws a TimeoutError.
         if (isTimeoutImminent(req)) {
-          throw generateTimeoutError(
+          throw new TimeoutError({
+            message: `Syncing timed out at model '${gameType.modelName}' after gameId: '${gameDataResults[currentIndex].id}'`,
             fieldPath,
-            `Syncing timed out at model '${gameType.modelName}' after gameId: '${gameDataResults[currentIndex].id}'`
-          );
+          });
         }
       }
       // if that was the last record, flag the gameType as synced
